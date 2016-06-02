@@ -124,6 +124,10 @@ module Proxsee
       _request path, capture_backend: true, &block
     end
 
+    # How long we should wait for the proxy to send a request to a backend.
+
+    PROXY_INTERNAL_WAIT = 0.5 # seconds
+
     # Don't use this directly.
     #
     # Makes a request to the proxy. Use either the `request` or
@@ -132,14 +136,37 @@ module Proxsee
     def _request path, capture_backend:, &block
       raise "no block given" unless block_given?
 
+      uri = default_uri.merge(path)
+
       res = begin
-        open default_uri.merge(path), redirect: false # never follow a 3xx.
+        open uri, redirect: false # never follow a 3xx.
 
       rescue OpenURI::HTTPRedirect # yes, this is weird
         $!
       end
 
-      block.call res, capture_backend ? get_backend_capture : nil
+      cap = begin
+        Timeout.timeout PROXY_INTERNAL_WAIT do
+          get_backend_capture
+        end
+      rescue Timeout::Error
+        raise <<-ERROR % PROXY_INTERNAL_WAIT
+
+          Timeout occured after waiting %s seconds for a request to be sent to
+          a backend. This usually happens when the proxy handled the request
+          itself, and did not call a backend.
+
+          The request was:
+
+          #{uri}
+
+          The response was:
+
+          #{res}
+        ERROR
+      end if capture_backend
+
+      block.call res, capture_backend ? cap : nil
     end
 
   end
