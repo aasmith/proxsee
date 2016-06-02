@@ -5,38 +5,38 @@ module Proxsee
 
     make_my_diffs_pretty!
 
-    def assert_header_exist path, header_name
-      request path do |res, _|
+    def assert_header_exist request, header_name
+      request request do |res, _|
         assert_includes res.metas, header_name.downcase, "Header not present"
       end
     end
 
-    def assert_header_equal path, header_name, header_value
-      request path do |res, _|
+    def assert_header_equal request, header_name, header_value
+      request request do |res, _|
         assert_equal header_value, res.metas[header_name.downcase].join, <<-MSG
           Expected header #{header_name} to be equal to #{header_value}.
         MSG
       end
     end
 
-    def assert_proxy_redirect_code code, path
-      request_internal_redirect path do |res|
+    def assert_proxy_redirect_code code, request
+      request_internal_redirect request do |res|
         actual_code, _ = res.message.split(" ", 2)
 
         assert_equal code.to_s, actual_code, "Incorrect status code"
       end
     end
 
-    def assert_proxy_redirect to, path
-      request_internal_redirect path do |res|
+    def assert_proxy_redirect to, request
+      request_internal_redirect request do |res|
         destination = res.uri
 
         assert_equal to, destination.to_s, "Invalid redirection target"
       end
     end
 
-    def assert_backend backend, path
-      request path do |response, backend_capture|
+    def assert_backend backend, request
+      request request do |response, backend_capture|
         assert_equal backend, backend_capture.name
       end
     end
@@ -100,9 +100,9 @@ module Proxsee
 
     # Makes a request that should not go outside of the proxy to a backend.
 
-    def request_internal path, &block
+    def request_internal request, &block
       ensure_internal do
-        _request path, capture_backend: false do |res, _|
+        _request request, capture_backend: false do |res, _|
           block.call res
         end
       end
@@ -111,8 +111,8 @@ module Proxsee
     # Makes a request that results in a redirect inside the proxy and does
     # not contact a backend.
 
-    def request_internal_redirect path, &block
-      request_internal path do |res|
+    def request_internal_redirect request, &block
+      request_internal request do |res|
         ensure_redirect res
         block.call res
       end
@@ -120,26 +120,33 @@ module Proxsee
 
     # Makes a request to the proxy and expects a backend to respond.
 
-    def request path, &block
-      _request path, capture_backend: true, &block
+    def request request, &block
+      _request request, capture_backend: true, &block
     end
 
     # How long we should wait for the proxy to send a request to a backend.
 
     PROXY_INTERNAL_WAIT = 0.5 # seconds
 
+    # Default options to send to OpenURI::open_uri.
+
+    OPEN_URI_OPTIONS = { redirect: false }.freeze
+
     # Don't use this directly.
     #
     # Makes a request to the proxy. Use either the `request` or
     # `request_internal` method as they clean up state correctly.
 
-    def _request path, capture_backend:, &block
+    def _request path_or_request, capture_backend:, &block
       raise "no block given" unless block_given?
 
-      uri = default_uri.merge(path)
+      request = Request.wrap path_or_request
+
+      uri     = default_uri.merge(request.path)
+      options = request.headers.merge OPEN_URI_OPTIONS
 
       res = begin
-        open uri, redirect: false # never follow a 3xx.
+        open uri, options
 
       rescue OpenURI::HTTPRedirect # yes, this is weird
         $!
