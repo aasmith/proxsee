@@ -31,6 +31,12 @@ class ConfigTest < Proxsee::Test
     assert_proxy_redirect_code 301, "/redir"
   end
 
+  def test_redir_www
+    req = Request.new("/www", "Host" => "example.com")
+
+    assert_proxy_redirect "http://www.example.com/www", req
+  end
+
   def test_request_headers_passed_to_backend
 
     request "/" do |res, backend|
