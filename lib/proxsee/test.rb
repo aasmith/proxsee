@@ -1,7 +1,32 @@
 require "minitest/autorun"
 
 module Proxsee
+
+  module ListenerHooks
+    def after_setup
+      unless listeners.listening?
+        listeners.start
+        listeners.await
+      end
+
+      super
+    end
+  end
+
+  module ListenerSetup
+    def listeners(listener_spec)
+      listeners = Listeners.new listener_spec
+
+      define_method :listeners do
+        listeners
+      end
+    end
+  end
+
   class Test < Minitest::Test
+
+    include ListenerHooks
+    extend  ListenerSetup
 
     make_my_diffs_pretty!
 

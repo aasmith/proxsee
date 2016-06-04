@@ -1,14 +1,11 @@
 require "proxsee"
 
-listeners = Listeners.new(
-  :default => "tcp://127.0.0.2:81",
-  :other   => "tcp://127.0.0.2:82"
-)
-
-listeners.start
-listeners.await
-
 class ConfigTest < Proxsee::Test
+
+  listeners(
+    :default => "tcp://127.0.0.2:81",
+    :other   => "tcp://127.0.0.2:82"
+  )
 
   def test_default_backend
     assert_backend :default, "/"

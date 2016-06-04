@@ -19,9 +19,13 @@ class Listeners
   def await
     puts "waiting for listeners"
     loop do
-      break if listeners.all? &:listening?
+      break if listening?
       sleep 0.1
     end
     puts "listeners ready"
+  end
+
+  def listening?
+    listeners.all? &:listening?
   end
 end
