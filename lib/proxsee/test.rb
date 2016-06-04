@@ -3,11 +3,14 @@ require "minitest/autorun"
 module Proxsee
 
   module ListenerHooks
-    def after_setup
-      unless listeners.listening?
-        listeners.start
-        listeners.await
-      end
+    def before_setup
+      listeners.start
+
+      super
+    end
+
+    def after_teardown
+      listeners.shutdown
 
       super
     end
@@ -15,10 +18,8 @@ module Proxsee
 
   module ListenerSetup
     def listeners(listener_spec)
-      listeners = Listeners.new listener_spec
-
       define_method :listeners do
-        listeners
+        @listeners ||= Listeners.new listener_spec
       end
     end
   end

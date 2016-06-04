@@ -14,18 +14,23 @@ class Listeners
 
   def start
     listeners.each &:run
-  end
 
-  def await
-    puts "waiting for listeners"
     loop do
       break if listening?
-      sleep 0.1
+      sleep 0.005
     end
-    puts "listeners ready"
   end
 
   def listening?
     listeners.all? &:listening?
+  end
+
+  def shutdown
+    listeners.each &:shutdown
+
+    loop do
+      break if listeners.none? &:listening?
+      sleep 0.005
+    end
   end
 end

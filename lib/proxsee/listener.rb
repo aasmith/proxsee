@@ -12,44 +12,69 @@ class Listener
     @port = listen_uri.port
 
     @listening = false
+    @run = true
   end
 
   def listening?
     @listening
   end
 
+  def run?
+    @run
+  end
+
   def run
     Thread.new do
-      puts "Backend %s @ %s:%s" % [backend, addr, port]
+      # puts "Backend %s @ %s:%s" % [backend, addr, port]
 
       server = TCPServer.new addr, port
 
-      out = "HTTP/1.0 200 OK\nOrig: true\nConnection: close\n\nbye"
+      @listening = true
 
-      loop do
-        @listening = true
-
-        client = server.accept
-        client.puts out
-
-        r = []
-        c = nil
-
+      while run?
         begin
-          loop do
-            r << (c=client.read_nonblock(READ_BYTES))
-          end
-        rescue IO::WaitReadable
-          unless c
-            IO.select([client])
-            retry
-          end
+          handle_client server.accept_nonblock
+
+        rescue IO::WaitReadable, Errno::EINTR
+          IO.select([server], nil, nil, 0.005)
         end
-
-        client.close
-
-        $results.push BackendTransaction.new(backend, r.join, out)
       end
+
+      server.close
+
+      @listening = false
     end
   end
+
+  def handle_client client
+    out = "HTTP/1.0 200 OK\nOrig: true\nConnection: close\n\nbye"
+
+    client.puts out
+
+    r = []
+    c = nil
+
+    begin
+      loop do
+        r << (c=client.read_nonblock(READ_BYTES))
+      end
+
+    rescue IO::WaitReadable
+      unless c
+        IO.select([client])
+        retry
+      end
+
+    rescue EOFError
+    end
+
+    client.close
+
+    $results.push BackendTransaction.new(backend, r.join, out)
+  end
+
+  def shutdown
+    @run = false
+  end
+
 end
