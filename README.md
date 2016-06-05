@@ -1,43 +1,26 @@
-= proxsee
+# proxsee
 
-home  :: FIX (url)
-code  :: FIX (url)
-rdoc  :: FIX (url)
-bugs  :: FIX (url)
-... etc ...
+<http://github.com/aasmith/proxsee>
 
-== DESCRIPTION:
+## Description
 
-FIX (describe your package)
+Proxsee provides unit testing for your proxy routing layer!
 
-== FEATURES/PROBLEMS:
+## Features/Problems
 
-* FIX (list of features or problems)
+* Proxy agnostic: supports HAProxy, nginx, etc.
+* Uses Ruby's Minitest for a familiar testing approach.
+* Test redirection, server selection, proxy responses, server responses and more!
 
-== SYNOPSIS:
+## Synopsis
 
-  FIX (code sample of usage)
+See [example.rb](/blob/master/example.rb) for an example test suite.
 
-== REQUIREMENTS:
+## Requirements
 
-* FIX (list of requirements)
+* Ruby and your proxy server, or just use the Dockerfile instead.
 
-== INSTALL:
-
-* FIX (sudo gem install, anything else)
-
-== DEVELOPERS:
-
-After checking out the source, run:
-
-  $ rake newb
-
-This task will install any missing dependencies, run the tests/specs,
-and generate the RDoc.
-
-== LICENSE:
-
-(The MIT License)
+## License
 
 Copyright (c) 2016 Andrew A. Smith
 
