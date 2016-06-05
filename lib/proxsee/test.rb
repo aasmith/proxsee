@@ -94,7 +94,7 @@ it to a backend.
       if backend_capture
         raise <<-EOF.squeeze(" ").strip
 A backend responded to a request that the proxy should have
-been handled internally.
+handled internally.
         EOF
       end
     end
