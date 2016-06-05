@@ -14,7 +14,7 @@ Proxsee provides unit testing for your proxy routing layer!
 
 ## Synopsis
 
-See [example.rb](/blob/master/example.rb) for an example test suite.
+See [example.rb](example.rb) for an example test suite.
 
 ## Requirements
 
