@@ -33,4 +33,12 @@ class Listeners
       sleep 0.005
     end
   end
+
+  def results
+    listeners.map { |l| l.transactions }.flatten
+  end
+
+  def find(backend)
+    listeners.detect { |l| l.backend == backend }
+  end
 end
