@@ -103,9 +103,9 @@ been handled internally.
 
     def request_internal_redirect request
       request_internal request do |res, backend_capture|
-        yield res, backend_capture
-
         ensure_redirect res
+
+        yield res, backend_capture
       end
     end
 
@@ -113,9 +113,9 @@ been handled internally.
 
     def request_internal request
       _request request do |res, backend_capture|
-        yield res, backend_capture
-
         ensure_no_backend_captured backend_capture
+
+        yield res, backend_capture
       end
     end
 
@@ -123,9 +123,9 @@ been handled internally.
 
     def request request
       _request request do |res, backend_capture|
-        yield res, backend_capture
-
         ensure_backend_captured backend_capture
+
+        yield res, backend_capture
       end
     end
 
