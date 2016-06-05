@@ -29,9 +29,11 @@ module Proxsee
       assert_includes res.metas, header_name.downcase, "Header not present"
     end
 
-    def assert_header_equal header_name, header_value, res
-      assert_equal header_value, res.metas[header_name.downcase].join, <<-MSG
-        Expected header #{header_name} to be equal to #{header_value}.
+    def assert_header_equal header_name, expected, res
+      header_value = res.metas[header_name.downcase]
+
+      assert_equal expected, [*header_value].join, <<-MSG
+        Expected header #{header_name} to be equal to #{expected}.
       MSG
     end
 
