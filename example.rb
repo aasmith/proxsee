@@ -52,5 +52,28 @@ class ConfigTest < Proxsee::Test
 
   end
 
-end
+  def test_backend_response_headers_supressed
 
+    listener = listeners.find :default
+    listener.out = <<-HTTP
+HTTP/1.0 200 OK
+Connection: close
+Secret: 42
+
+Done
+    HTTP
+
+    request "/" do |res, backend|
+
+      assert_backend :default, backend
+
+      assert_match /Secret: 42/, backend.response,
+        "Expected secret value to be omitted from backend response"
+
+      assert_header_equal "Secret", "REDACTED", res
+
+    end
+
+  end
+
+end
