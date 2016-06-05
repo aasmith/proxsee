@@ -26,7 +26,8 @@ module Proxsee
 
   module Assertions
     def assert_header_exist header_name, res
-      assert_includes res.metas, header_name.downcase, "Header not present"
+      assert_includes res.metas, header_name.downcase,
+        "Header #{header_name} expected to be present"
     end
 
     def assert_header_equal header_name, expected, res
