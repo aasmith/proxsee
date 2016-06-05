@@ -40,6 +40,12 @@ class ConfigTest < Proxsee::Test
     end
   end
 
+  def test_no_redir_when_www
+    request Request.new("/www", "Host" => "www.example.com") do |res, backend|
+      assert_backend :default, backend
+    end
+  end
+
   def test_request_headers_passed_to_backend
 
     request "/" do |res, backend_capture|
