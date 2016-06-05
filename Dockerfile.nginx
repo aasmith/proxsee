@@ -1,0 +1,18 @@
+FROM nginx
+
+RUN apt-get update && \
+    apt-get install -y ruby && \
+    echo "install: --no-document" > /etc/gemrc && \
+    gem update --system && \
+    gem install minitest
+
+RUN mkdir /tests
+VOLUME /tests
+
+WORKDIR /tests
+
+CMD nginx && ruby -Ilib example.rb -v -p
+
+# docker build -f Dockerfile.nginx -t proxsee-nginx .
+# docker run -it --rm -v $(pwd)/nginx-proxy.conf:/etc/nginx/conf.d/default.conf -v $(pwd):/tests proxsee-nginx
+
