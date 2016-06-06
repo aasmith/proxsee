@@ -38,6 +38,11 @@ module Proxsee
       MSG
     end
 
+    def assert_redirect response
+      assert_kind_of OpenURI::HTTPRedirect, response,
+        "Response should be a redirect"
+    end
+
     def assert_redirect_status code, response
       actual_code, _ = response.message.split(" ", 2)
 
@@ -69,79 +74,16 @@ module Proxsee
       URI.parse("http://0:80")
     end
 
-    # Raises an error if the given response is not a redirect.
-
-    def ensure_redirect response
-      unless OpenURI::HTTPRedirect === response
-        raise "Response was not a redirect: #{response.message}"
-      end
-    end
-
-    # Raises an error unless a backend capture is provided.
-
-    def ensure_backend_captured backend_capture
-      unless backend_capture
-        raise <<-EOF
-The proxy responded internally to a request instead of passing
-it to a backend.
-        EOF
-      end
-    end
-
-    # Raises an error if a backend capture is provided.
-
-    def ensure_no_backend_captured backend_capture
-      if backend_capture
-        raise <<-EOF.squeeze(" ").strip
-A backend responded to a request that the proxy should have
-handled internally.
-        EOF
-      end
-    end
-
-    # Makes a request that should not go outside of the proxy to a backend,
-    # and additionally should result in a redirect being returned.
-
-    def request_internal_redirect path, *args
-      request_internal path, *args do |res, backend_capture|
-        ensure_redirect res
-
-        yield res, backend_capture
-      end
-    end
-
-    # Makes a request that should not go outside of the proxy to a backend.
-
-    def request_internal path, *args
-      _request path, *args do |res, backend_capture|
-        ensure_no_backend_captured backend_capture
-
-        yield res, backend_capture
-      end
-    end
-
-    # Makes a request to the proxy that should be forwarded on to a backend.
-
-    def request path, *args
-      _request path, *args do |res, backend_capture|
-        ensure_backend_captured backend_capture
-
-        yield res, backend_capture
-      end
-    end
-
     # Default options to send to OpenURI::open_uri.
 
     OPEN_URI_OPTIONS = { redirect: false }.freeze
 
-    # Don't use this directly.
-    #
     # Makes a request to the proxy.
     #
-    # Use `request` for a request that should go through to a
-    # backend, and `internal_request` for one that should not.
+    # Yields the response and the backend transaction (if it occured) to
+    # the provided block.
 
-    def _request path, *args
+    def request path, *args
 
       raise "Block required" unless block_given?
 

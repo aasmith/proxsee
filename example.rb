@@ -27,14 +27,20 @@ class ConfigTest < Proxsee::Test
   end
 
   def test_redir
-    request_internal_redirect "/redir" do |res|
+    request "/redir" do |res, backend|
+      refute backend
+
+      assert_redirect res
       assert_redirect_location "http://nope", res
       assert_redirect_status 301, res
     end
   end
 
   def test_redir_www
-    request_internal_redirect "/www", "Host" => "example.com" do |res|
+    request "/www", "Host" => "example.com" do |res, backend|
+      refute backend
+
+      assert_redirect res
       assert_redirect_location "http://www.example.com/www", res
       assert_redirect_status 301, res
     end
@@ -51,7 +57,9 @@ class ConfigTest < Proxsee::Test
   end
 
   def test_denied
-    request_internal "/nope" do |res|
+    request "/nope" do |res, backend|
+      refute backend
+
       assert_match /^403 Forbidden/, res.message
     end
   end
