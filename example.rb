@@ -34,14 +34,18 @@ class ConfigTest < Proxsee::Test
   end
 
   def test_redir_www
-    request_internal_redirect Request.new("/www", "Host" => "example.com") do |res|
+    request_internal_redirect "/www", "Host" => "example.com" do |res|
       assert_redirect_location "http://www.example.com/www", res
       assert_redirect_status 301, res
     end
   end
 
   def test_no_redir_when_www
-    request Request.new("/www", "Host" => "www.example.com") do |res, backend|
+    headers = {
+      "Host" => "www.example.com"
+    }
+
+    request "/www", headers do |res, backend|
       assert_backend :default, backend
     end
   end

@@ -102,8 +102,8 @@ handled internally.
     # Makes a request that should not go outside of the proxy to a backend,
     # and additionally should result in a redirect being returned.
 
-    def request_internal_redirect request
-      request_internal request do |res, backend_capture|
+    def request_internal_redirect path, *args
+      request_internal path, *args do |res, backend_capture|
         ensure_redirect res
 
         yield res, backend_capture
@@ -112,8 +112,8 @@ handled internally.
 
     # Makes a request that should not go outside of the proxy to a backend.
 
-    def request_internal request
-      _request request do |res, backend_capture|
+    def request_internal path, *args
+      _request path, *args do |res, backend_capture|
         ensure_no_backend_captured backend_capture
 
         yield res, backend_capture
@@ -122,8 +122,8 @@ handled internally.
 
     # Makes a request to the proxy that should be forwarded on to a backend.
 
-    def request request
-      _request request do |res, backend_capture|
+    def request path, *args
+      _request path, *args do |res, backend_capture|
         ensure_backend_captured backend_capture
 
         yield res, backend_capture
@@ -141,11 +141,11 @@ handled internally.
     # Use `request` for a request that should go through to a
     # backend, and `internal_request` for one that should not.
 
-    def _request path_or_request
+    def _request path, *args
 
       raise "Block required" unless block_given?
 
-      request = Request.wrap path_or_request
+      request = Request.new(path, *args)
 
       uri     = default_uri.merge(request.path)
       options = request.headers.merge OPEN_URI_OPTIONS
