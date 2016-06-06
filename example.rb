@@ -50,6 +50,12 @@ class ConfigTest < Proxsee::Test
     end
   end
 
+  def test_denied
+    request_internal "/nope" do |res|
+      assert_match /^403 Forbidden/, res.message
+    end
+  end
+
   def test_request_headers_passed_to_backend
 
     request "/" do |res, backend_capture|
