@@ -1,3 +1,5 @@
+require 'webrick'
+
 class Listener
 
   attr_reader :backend, :addr, :port, :listening, :transactions
@@ -26,6 +28,7 @@ class Listener
     @transactions = []
 
     @out = nil
+    @server = nil
   end
 
   alias name backend
@@ -45,7 +48,7 @@ class Listener
   # Requests that the listener should stop listening.
 
   def shutdown
-    @run = false
+    @server.shutdown
   end
 
   # The response that this listener will provide when called.
@@ -61,60 +64,17 @@ class Listener
 
   def run
     Thread.new do
-      # puts "Backend %s @ %s:%s" % [backend, addr, port]
-
-      server = TCPServer.new addr, port
-
       @listening = true
-
-      while run?
-        begin
-          handle_client server.accept_nonblock
-
-        rescue IO::WaitReadable, Errno::EINTR
-          IO.select([server], nil, nil, 0.005)
-        end
+      p Time.now
+      @server = WEBrick::HTTPServer.new(:BindAddress => addr, :Port => port)
+      @server.mount_proc "/" do |req, res|
+        res.status = 200
+        res.body = out
+        @transactions.push BackendTransaction.new(backend, req, out)
       end
-
-      server.close
-
+      @server.start
       @listening = false
     end
-  end
-
-  # Manages the client connection after is has been accepted by the
-  # listener loop in +run+.
-  #
-  # Reads all bytes from the client, then sends the value in +out+
-  # as the response.
-  #
-  # A BackendTransaction is created that captures all bytes received
-  # and written, which is appended to the list of +transactions+.
-
-  def handle_client client
-
-    r = []
-    c = nil
-
-    begin
-      loop do
-        r << (c=client.read_nonblock(READ_BYTES))
-      end
-
-    rescue IO::WaitReadable
-      unless c
-        IO.select([client])
-        retry
-      end
-
-    rescue EOFError
-    end
-
-    client.puts out
-
-    @transactions.push BackendTransaction.new(backend, r.join, out)
-
-    client.close
   end
 
 end
