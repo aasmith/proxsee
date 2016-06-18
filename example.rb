@@ -92,9 +92,34 @@ Done
       assert_backend :default, backend
 
       assert_match /Secret: 42/, backend.response,
+        "Expected secret value to be in backend response"
+
+      assert_header_equal "Secret", "REDACTED", res,
+        "Expected secret value to be redacted in proxy response"
+
+    end
+
+  end
+
+  def test_backend_response_headers_deleted
+    listener = listeners.find :default
+    listener.out = <<-HTTP
+HTTP/1.0 200 OK
+Connection: close
+Internal: not-for-external-use
+
+Done
+    HTTP
+
+    request "/" do |res, backend|
+
+      assert_backend :default, backend
+
+      assert_match /Internal: not-for-external-use/, backend.response,
         "Expected secret value to be omitted from backend response"
 
-      assert_header_equal "Secret", "REDACTED", res
+      refute_header "Internal", res,
+        "Expected internal header to not be in proxy response"
 
     end
 
