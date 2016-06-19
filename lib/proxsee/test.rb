@@ -56,7 +56,7 @@ module Proxsee
       uri     = default_uri.merge(request.path)
       options = request.headers.merge OPEN_URI_OPTIONS
 
-      res = begin
+      response = begin
         open uri, options
 
       rescue OpenURI::HTTPRedirect, OpenURI::HTTPError
@@ -66,13 +66,13 @@ module Proxsee
 
       end
 
-      cap, *nothing = listeners.results
+      backend_transaction, *nothing = listeners.results
 
       unless nothing.empty?
         raise "More than one result found when collecting backend captures"
       end
 
-      yield res, cap
+      yield response, backend_transaction
     end
 
   end
