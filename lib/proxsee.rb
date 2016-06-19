@@ -1,6 +1,7 @@
 require 'socket'
 require 'open-uri'
 
+require "proxsee/assertions"
 require "proxsee/backend_transaction"
 require "proxsee/listener"
 require "proxsee/listeners"
