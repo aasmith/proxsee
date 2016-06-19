@@ -1,6 +1,6 @@
 require "proxsee"
 
-class ConfigTest < Proxsee::Test
+class Example < Proxsee::Test
 
   listeners(
     :default => "tcp://127.0.0.2:81",
