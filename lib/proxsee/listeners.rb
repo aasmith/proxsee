@@ -13,7 +13,7 @@ class Listeners
   end
 
   def start
-    listeners.each &:run
+    listeners.each(&:run)
 
     loop do
       break if listening?
@@ -22,14 +22,14 @@ class Listeners
   end
 
   def listening?
-    listeners.all? &:listening?
+    listeners.all?(&:listening?)
   end
 
   def shutdown
-    listeners.each &:shutdown
+    listeners.each(&:shutdown)
 
     loop do
-      break if listeners.none? &:listening?
+      break if listeners.none?(&:listening?)
       sleep 0.005
     end
   end
