@@ -7,8 +7,6 @@ class Listener
 
   attr_writer :out
 
-  READ_BYTES = 1024
-
   def initialize backend, uri
     @backend = backend
 
