@@ -66,8 +66,11 @@ module Proxsee
 
       end
 
-      # TODO check for more than 1 response
-      cap = listeners.results[0]
+      cap, *nothing = listeners.results
+
+      unless nothing.empty?
+        raise "More than one result found when collecting backend captures"
+      end
 
       yield res, cap
     end
