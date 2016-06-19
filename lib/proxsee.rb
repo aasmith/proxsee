@@ -1,5 +1,5 @@
-require 'socket'
-require 'open-uri'
+require "open-uri"
+require "webrick"
 
 require "proxsee/assertions"
 require "proxsee/backend_transaction"

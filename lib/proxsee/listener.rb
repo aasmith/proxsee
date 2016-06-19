@@ -1,5 +1,3 @@
-require "webrick"
-
 class Listener
 
   attr_reader :backend, :addr, :port, :listening, :transactions
