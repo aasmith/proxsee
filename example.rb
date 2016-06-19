@@ -65,13 +65,10 @@ class Example < Proxsee::Test
   end
 
   def test_request_headers_passed_to_backend
-
     request "/" do |res, backend_capture|
-
       assert_header_equal "Proxy", "true", backend_capture.request,
         "Expected header and value Proxy: true to be sent to the backend"
     end
-
   end
 
   def test_backend_response_headers_supressed
@@ -85,7 +82,6 @@ class Example < Proxsee::Test
     listener.out = out
 
     request "/" do |res, backend|
-
       assert_backend :default, backend
 
       assert_header_equal "Secret", "42", backend.response,
@@ -93,9 +89,7 @@ class Example < Proxsee::Test
 
       assert_header_equal "Secret", "REDACTED", res,
         "Expected secret value to be redacted in proxy response"
-
     end
-
   end
 
   def test_backend_response_headers_deleted
@@ -109,7 +103,6 @@ class Example < Proxsee::Test
     listener.out = out
 
     request "/" do |res, backend|
-
       assert_backend :default, backend
 
       assert_header_equal "Internal", "not-for-external-use", backend.response,
@@ -117,9 +110,7 @@ class Example < Proxsee::Test
 
       refute_header "Internal", res,
         "Expected internal header to not be in proxy response"
-
     end
-
   end
 
 end
