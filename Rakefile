@@ -17,15 +17,17 @@ Hoe.spec "proxsee" do
   license "MIT"
 end
 
-task "example" => %w(example:haproxy example:nginx)
+task "example" => %w(example:build example:run)
 
-task "example:haproxy" do
+task "example:run" => %w(example:run:haproxy example:run:nginx)
+
+task "example:run:haproxy" do
   sh %{ docker run -it --rm \
           -v $(pwd)/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg \
           -v $(pwd):/tests proxsee-haproxy }.squeeze " "
 end
 
-task "example:nginx" do
+task "example:run:nginx" do
   sh %{ docker run -it --rm \
           -v $(pwd)/nginx-proxy.conf:/etc/nginx/conf.d/default.conf \
           -v $(pwd):/tests proxsee-nginx }.squeeze " "
