@@ -13,6 +13,6 @@ WORKDIR /tests
 
 CMD haproxy -f /usr/local/etc/haproxy/haproxy.cfg && ruby -Ilib example.rb -v -p
 
-# docker build -t proxsee .
-# docker run -it --rm -v $(pwd)/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg -v $(pwd):/tests proxsee
+# docker build -t proxsee-haproxy .
+# docker run -it --rm -v $(pwd)/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg -v $(pwd):/tests proxsee-haproxy
 
