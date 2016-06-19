@@ -1,17 +1,15 @@
+require "webrick"
+
 class Listener
 
   attr_reader :backend, :addr, :port, :listening, :transactions
 
   # The HTTP response that will be provided when calling this listener,
-  # in place of DEFAULT_RESPONSE.
+  # in place of Listener.default_response.
 
   attr_writer :out
 
   READ_BYTES = 1024
-
-  # The default HTTP response this listener will reply with when called.
-
-  DEFAULT_RESPONSE = "HTTP/1.0 200 OK\nOrig: true\nConnection: close\n\nbye"
 
   def initialize backend, uri
     @backend = backend
@@ -26,6 +24,19 @@ class Listener
     @transactions = []
 
     @out = nil
+  end
+
+  class << self
+
+    # The default HTTP response this listener will reply with when called.
+
+    def default_response
+      out = WEBrick::HTTPResponse.new WEBrick::Config::HTTP
+      out.status = 200
+      out.body = "bye"
+      out
+    end
+
   end
 
   alias name backend
@@ -51,7 +62,7 @@ class Listener
   # The response that this listener will provide when called.
 
   def out
-    @out or DEFAULT_RESPONSE
+    @out or self.class.default_response
   end
 
   # Starts the accept loop. Listens on +port+, and replies to each
@@ -93,27 +104,12 @@ class Listener
 
   def handle_client client
 
-    r = []
-    c = nil
+    req = WEBrick::HTTPRequest.new WEBrick::Config::HTTP
+    req.parse client
 
-    begin
-      loop do
-        r << (c=client.read_nonblock(READ_BYTES))
-      end
+    @transactions.push BackendTransaction.new(backend, req, out)
 
-    rescue IO::WaitReadable
-      unless c
-        IO.select([client])
-        retry
-      end
-
-    rescue EOFError
-    end
-
-    client.puts out
-
-    @transactions.push BackendTransaction.new(backend, r.join, out)
-
+    client.print out
     client.close
   end
 

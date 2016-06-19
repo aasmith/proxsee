@@ -68,9 +68,7 @@ class ConfigTest < Proxsee::Test
 
     request "/" do |res, backend_capture|
 
-      # WIP: Current way to check for a header in the proxy's request to
-      # the backend. It is just a plain string for now...
-      assert_match /Proxy: true/, backend_capture.request,
+      assert_header_equal "Proxy", "true", backend_capture.request,
         "Expected header and value Proxy: true to be sent to the backend"
     end
 
@@ -78,20 +76,19 @@ class ConfigTest < Proxsee::Test
 
   def test_backend_response_headers_supressed
 
-    listener = listeners.find :default
-    listener.out = <<-HTTP
-HTTP/1.0 200 OK
-Connection: close
-Secret: 42
+    # Respond with a 200 OK as normal, but with an extra header.
 
-Done
-    HTTP
+    out = Listener.default_response
+    out["Secret"] = 42
+
+    listener = listeners.find :default
+    listener.out = out
 
     request "/" do |res, backend|
 
       assert_backend :default, backend
 
-      assert_match /Secret: 42/, backend.response,
+      assert_header_equal "Secret", "42", backend.response,
         "Expected secret value to be in backend response"
 
       assert_header_equal "Secret", "REDACTED", res,
@@ -102,20 +99,20 @@ Done
   end
 
   def test_backend_response_headers_deleted
-    listener = listeners.find :default
-    listener.out = <<-HTTP
-HTTP/1.0 200 OK
-Connection: close
-Internal: not-for-external-use
 
-Done
-    HTTP
+    # Respond with a 200 OK as normal, but with an extra header.
+
+    out = Listener.default_response
+    out["Internal"] = "not-for-external-use"
+
+    listener = listeners.find :default
+    listener.out = out
 
     request "/" do |res, backend|
 
       assert_backend :default, backend
 
-      assert_match /Internal: not-for-external-use/, backend.response,
+      assert_header_equal "Internal", "not-for-external-use", backend.response,
         "Expected secret value to be omitted from backend response"
 
       refute_header "Internal", res,
