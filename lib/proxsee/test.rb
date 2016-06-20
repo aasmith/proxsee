@@ -47,14 +47,12 @@ module Proxsee
     # Yields the response and the backend transaction (if it occured) to
     # the provided block.
 
-    def request path, *args
+    def request path, headers = {}
 
       raise "Block required" unless block_given?
 
-      request = Request.new(path, *args)
-
-      uri     = default_uri.merge(request.path)
-      options = request.headers.merge OPEN_URI_OPTIONS
+      uri     = default_uri.merge path
+      options = headers.merge OPEN_URI_OPTIONS
 
       response = begin
         open uri, options
