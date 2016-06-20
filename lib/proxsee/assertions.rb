@@ -23,25 +23,26 @@ module Proxsee
       MSG
     end
 
-    def assert_redirect response
+    def assert_redirect response, msg = nil
       assert_kind_of OpenURI::HTTPRedirect, response,
-        "Response should be a redirect"
+        msg || "Response should be a redirect"
     end
 
-    def assert_redirect_status code, response
+    def assert_redirect_status code, response, msg = nil
       actual_code, _ = response.message.split(" ", 2)
 
-      assert_equal code.to_s, actual_code, "Incorrect status code"
+      assert_equal code.to_s, actual_code, msg || "Incorrect status code"
     end
 
-    def assert_redirect_location to, response
+    def assert_redirect_location to, response, msg = nil
       destination = response.uri
 
-      assert_equal to, destination.to_s, "Invalid redirection target"
+      assert_equal to, destination.to_s, msg || "Invalid redirection target"
     end
 
-    def assert_backend backend_name, backend_capture
-      assert_equal backend_name, backend_capture.name
+    def assert_backend backend_name, backend_capture, msg = nil
+      assert_equal backend_name, backend_capture.name,
+        msg || "Expected backend #{backend_name} to be equal to #{backend_capture.name}"
     end
 
     def headers(res_or_req)
